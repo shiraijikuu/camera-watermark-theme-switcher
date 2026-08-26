@@ -10,7 +10,7 @@
 import os
 import json
 
-PLUGIN_VERSION = '1.0.0'
+PLUGIN_VERSION = '1.0.1'
 
 _CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'theme.json')
 
@@ -62,10 +62,8 @@ def _detect_os_theme():
         return 'light'
 
 
-def _apply_theme(mode, root, style):
-    """把 clam 主题 + ttk 样式 + tk 控件配色应用到主窗口。"""
-    t = DARK if mode == 'dark' else LIGHT
-    # ttk 全局样式（含其它 Toplevel 窗口的 ttk 控件）
+def _apply_ttk_styles(t, style):
+    """ttk 全局样式。注意：theme_use('clam') 全局生效，会改变所有窗口及未来创建的控件外观。"""
     style.theme_use('clam')
     style.configure('.', background=t['bg'], foreground=t['fg'])
     style.configure('TFrame', background=t['bg'])
@@ -99,36 +97,43 @@ def _apply_theme(mode, root, style):
     style.configure('TLabelframe', background=t['bg'], bordercolor=t['border'], lightcolor=t['border'], darkcolor=t['border'])
     style.configure('TLabelframe.Label', background=t['bg'], foreground=t['fg'])
     style.configure('Horizontal.TScale', background=t['bg'], troughcolor=t['field'])
+
+
+def _walk_apply(widget, t):
+    """递归给 tk 控件上色（Canvas/Text/Entry/Label/Listbox/Checkbutton/Radiobutton）。"""
+    try:
+        cls = widget.winfo_class()
+        if cls == 'Canvas':
+            widget.configure(bg=t['bg'], highlightthickness=0)
+        elif cls == 'Text':
+            widget.configure(bg=t['field'], fg=t['fg'], insertbackground=t['fg'])
+        elif cls == 'Entry':
+            widget.configure(bg=t['field'], fg=t['fg'], insertbackground=t['fg'])
+        elif cls == 'Label':
+            widget.configure(bg=t['bg'], fg=t['fg'])
+        elif cls == 'Listbox':
+            widget.configure(bg=t['field'], fg=t['fg'])
+        elif cls == 'Checkbutton':
+            widget.configure(bg=t['bg'], fg=t['fg'], activebackground=t['bg'],
+                             activeforeground=t['fg'], selectcolor=t['field'])
+        elif cls == 'Radiobutton':
+            widget.configure(bg=t['bg'], fg=t['fg'], activebackground=t['bg'],
+                             activeforeground=t['fg'], selectcolor=t['field'])
+    except Exception:
+        pass
+    for child in widget.winfo_children():
+        _walk_apply(child, t)
+
+
+def _apply_theme(mode, root, style):
+    """把 clam 主题 + ttk 样式 + tk 控件配色应用到主窗口。"""
+    t = DARK if mode == 'dark' else LIGHT
+    _apply_ttk_styles(t, style)
     try:
         root.configure(bg=t['bg'])
     except Exception:
         pass
-
-    def walk(widget):
-        try:
-            cls = widget.winfo_class()
-            if cls == 'Canvas':
-                widget.configure(bg=t['bg'], highlightthickness=0)
-            elif cls == 'Text':
-                widget.configure(bg=t['field'], fg=t['fg'], insertbackground=t['fg'])
-            elif cls == 'Entry':
-                widget.configure(bg=t['field'], fg=t['fg'], insertbackground=t['fg'])
-            elif cls == 'Label':
-                widget.configure(bg=t['bg'], fg=t['fg'])
-            elif cls == 'Listbox':
-                widget.configure(bg=t['field'], fg=t['fg'])
-            elif cls == 'Checkbutton':
-                widget.configure(bg=t['bg'], fg=t['fg'], activebackground=t['bg'],
-                                 activeforeground=t['fg'], selectcolor=t['field'])
-            elif cls == 'Radiobutton':
-                widget.configure(bg=t['bg'], fg=t['fg'], activebackground=t['bg'],
-                                 activeforeground=t['fg'], selectcolor=t['field'])
-        except Exception:
-            pass
-        for child in widget.winfo_children():
-            walk(child)
-
-    walk(root)
+    _walk_apply(root, t)
 
 
 def register(api):
