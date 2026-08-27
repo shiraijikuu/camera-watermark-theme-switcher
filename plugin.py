@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """theme-switcher —— 主题切换插件（黑夜模式 / 白天模式 / 跟随系统）
 
-主程序需 >= 1.6.0（含 on_ui_ready + on_window_created 扩展点；动态窗口：插件设置/管理/商店也随主题变色）。
+主程序需 >= 1.7.0（含 on_ui_ready + on_window_created 扩展点；动态窗口随主题变色；缩略图选中高亮保留）。
 功能：
 - 三种模式：跟随系统 / 黑夜模式 / 白天模式
 - 主窗口顶部提供主题下拉，实时生效并记住选择（存到本插件目录 theme.json）
@@ -10,7 +10,7 @@
 import os
 import json
 
-PLUGIN_VERSION = '1.0.3'
+PLUGIN_VERSION = '1.0.4'
 
 _CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'theme.json')
 
@@ -102,8 +102,11 @@ def _apply_ttk_styles(t, style):
 
 
 def _walk_apply(widget, t):
-    """递归给 tk 控件上色（Canvas/Text/Entry/Label/Listbox/Checkbutton/Radiobutton）。"""
+    """递归给 tk 控件上色（Canvas/Text/Entry/Label/Listbox/Checkbutton/Radiobutton）。
+    被应用标记 _wm_keep_bg 的控件（如缩略图选中态）保留其手动背景，不覆盖。"""
     try:
+        if getattr(widget, '_wm_keep_bg', False):
+            return  # 跳过该控件本身，但仍会遍历其子控件
         cls = widget.winfo_class()
         if cls == 'Canvas':
             widget.configure(bg=t['bg'], highlightthickness=0)
