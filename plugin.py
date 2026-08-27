@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """theme-switcher —— 主题切换插件（黑夜模式 / 白天模式 / 跟随系统）
 
-主程序需 >= 1.5.0（含 on_ui_ready 扩展点；适配新版界面：列表工具栏 / 预览缩放按钮 / 底部导出按钮等随主题变色）。
+主程序需 >= 1.6.0（含 on_ui_ready + on_window_created 扩展点；动态窗口：插件设置/管理/商店也随主题变色）。
 功能：
 - 三种模式：跟随系统 / 黑夜模式 / 白天模式
 - 主窗口顶部提供主题下拉，实时生效并记住选择（存到本插件目录 theme.json）
@@ -10,7 +10,7 @@
 import os
 import json
 
-PLUGIN_VERSION = '1.0.2'
+PLUGIN_VERSION = '1.0.3'
 
 _CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'theme.json')
 
@@ -27,6 +27,8 @@ LIGHT = {
 
 LABELS = {'auto': '跟随主题', 'dark': '黑夜模式', 'light': '白天模式'}
 _LABEL_REV = {v: k for k, v in LABELS.items()}
+
+_PALETTE = LIGHT  # 当前生效的配色（供动态窗口上色）
 
 
 def _load_choice():
@@ -127,13 +129,25 @@ def _walk_apply(widget, t):
 
 def _apply_theme(mode, root, style):
     """把 clam 主题 + ttk 样式 + tk 控件配色应用到主窗口。"""
+    global _PALETTE
     t = DARK if mode == 'dark' else LIGHT
+    _PALETTE = t
     _apply_ttk_styles(t, style)
     try:
         root.configure(bg=t['bg'])
     except Exception:
         pass
     _walk_apply(root, t)
+
+
+def _theme_window(win):
+    """给动态 Toplevel（插件设置/管理/商店等）上当前主题色。"""
+    t = _PALETTE
+    try:
+        win.configure(bg=t['bg'])
+    except Exception:
+        pass
+    _walk_apply(win, t)
 
 
 def register(api):
@@ -190,3 +204,4 @@ def register(api):
         app.root.after(5000, poll)
 
     api.on_ui_ready(init_ui)
+    api.on_window_created(_theme_window)
