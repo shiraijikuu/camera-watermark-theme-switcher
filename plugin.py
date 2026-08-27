@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """theme-switcher —— 主题切换插件（黑夜模式 / 白天模式 / 跟随系统）
 
-主程序需 >= 1.4.0（含 on_ui_ready 扩展点）。
+主程序需 >= 1.5.0（含 on_ui_ready 扩展点；适配新版界面：列表工具栏 / 预览缩放按钮 / 底部导出按钮等随主题变色）。
 功能：
 - 三种模式：跟随系统 / 黑夜模式 / 白天模式
 - 主窗口顶部提供主题下拉，实时生效并记住选择（存到本插件目录 theme.json）
@@ -10,7 +10,7 @@
 import os
 import json
 
-PLUGIN_VERSION = '1.0.1'
+PLUGIN_VERSION = '1.0.2'
 
 _CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'theme.json')
 
