@@ -1,6 +1,6 @@
 # theme-switcher —— 主题切换插件
 
-给 Photo Watermark 切换界面主题：
+给 camera-watermark 切换界面主题：
 - **跟随主题**：自动跟随 Windows 深/浅色设置（每 5 秒检测，系统切换后自动跟随）
 - **黑夜模式**：深色界面
 - **白天模式**：浅色界面
