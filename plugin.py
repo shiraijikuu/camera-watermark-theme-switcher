@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""theme-switcher v2.0.0 —— 多主题 + 菜单栏深色化 + 一次性轻动效
+"""theme-switcher v2.1.0 —— 多主题 + 菜单栏深色化 + 一次性轻动效
 
-- 8 套精选配色 + 跟随系统（auto 深→tokyo / 浅→paper）
+- 9 套精选配色 + 跟随系统（auto 深→tokyo / 浅→paper）
 - 修复黑夜模式顶部菜单栏白底：递归给 tk.Menu 及其级联子菜单上色
 - 三栏布局所需 panel/card/sub_fg 语义色 + 竖排 Notebook + hover 色阶
 - 轻动效（默认开，仅开窗/切主题瞬间，不碰渲染高频路径；
@@ -11,7 +11,7 @@
 import os
 import json
 
-PLUGIN_VERSION = '2.0.0'
+PLUGIN_VERSION = '2.1.0'
 
 _CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'theme.json')
 
@@ -69,13 +69,19 @@ THEMES = {
         'select': '#b45309', 'select_hover': '#92400e', 'select_fg': '#fffaf2',
         'canvas_bg': '#ece4d6', 'tree_bg': '#fdfbf6', 'tree_heading_bg': '#f0e9da',
         'tab_bg': '#f6f0e4', 'notebook_bg': '#fdfbf6'},
+    'sakura': {  # 樱花粉（浅色甜美，玫粉强调）
+        'bg': '#fbeef4', 'panel': '#fff5f9', 'card': '#ffffff', 'field': '#ffffff',
+        'fg': '#43283a', 'sub_fg': '#a9788f', 'border': '#f2cfdf',
+        'select': '#e64f97', 'select_hover': '#ef6fad', 'select_fg': '#ffffff',
+        'canvas_bg': '#f6e0ec', 'tree_bg': '#fff7fb', 'tree_heading_bg': '#fbdde9',
+        'tab_bg': '#fbdde9', 'notebook_bg': '#fff5f9'},
 }
 
-ORDER = ['auto', 'tokyo', 'oled', 'graphite', 'forest', 'amethyst', 'mocha', 'paper', 'cream']
+ORDER = ['auto', 'tokyo', 'oled', 'graphite', 'forest', 'amethyst', 'mocha', 'paper', 'cream', 'sakura']
 LABELS = {
     'auto': '跟随系统', 'tokyo': '深夜蓝', 'oled': '纯黑 OLED', 'graphite': '石墨灰',
     'forest': '深林墨绿', 'amethyst': '紫晶', 'mocha': '暖棕摩卡',
-    'paper': '亮白', 'cream': '暖米白',
+    'paper': '亮白', 'cream': '暖米白', 'sakura': '樱花粉',
 }
 _LABEL_REV = {v: k for k, v in LABELS.items()}
 
@@ -142,17 +148,18 @@ def _apply_ttk_styles(t, style):
     style.configure('Sub.TLabel', background=t['bg'], foreground=t['sub_fg'])
 
     style.configure('TButton', background=t['field'], foreground=t['fg'],
-                    borderwidth=1, padding=(10, 4), focusthickness=0)
+                    borderwidth=1, padding=(6, 2), focusthickness=0, relief='flat',
+                    bordercolor=t['border'], lightcolor=t['field'], darkcolor=t['field'])
     style.map('TButton',
-              background=[('pressed', t['select']), ('active', t['select_hover']),
-                          ('disabled', t['border'])],
-              foreground=[('active', t['select_fg']), ('pressed', t['select_fg']),
-                          ('disabled', t['sub_fg'])])
+              background=[('disabled', t['border']),
+                          ('active', t['field']), ('pressed', t['field'])],
+              foreground=[('disabled', t['sub_fg']),
+                          ('active', t['fg']), ('pressed', t['fg'])])
 
     style.configure('Accent.TButton', background=t['select'], foreground=t['select_fg'],
-                    borderwidth=0, padding=(12, 5))
+                    borderwidth=0, padding=(8, 3))
     style.map('Accent.TButton',
-              background=[('active', t['select_hover']), ('pressed', t['select'])])
+              background=[('active', t['select']), ('pressed', t['select'])])
 
     style.configure('TEntry', fieldbackground=t['field'], foreground=t['fg'],
                     insertcolor=t['fg'], bordercolor=t['border'],
@@ -181,7 +188,7 @@ def _apply_ttk_styles(t, style):
     try:
         style.configure('Vertical.TNotebook', tabposition='wn',
                         background=t['notebook_bg'], borderwidth=0)
-        style.configure('Vertical.TNotebook.Tab', padding=(10, 16),
+        style.configure('Vertical.TNotebook.Tab', padding=(6, 10),
                         background=t['bg'], foreground=t['sub_fg'], borderwidth=0)
         style.map('Vertical.TNotebook.Tab',
                   background=[('selected', t['tab_bg']), ('active', t['card'])],
@@ -209,9 +216,9 @@ def _apply_ttk_styles(t, style):
     style.configure('Card.TLabelframe.Label', background=t['card'], foreground=t['fg'])
     # Menubutton（插件设置下拉）
     style.configure('TMenubutton', background=t['field'], foreground=t['fg'],
-                    borderwidth=1, padding=(10, 4), arrowcolor=t['fg'])
-    style.map('TMenubutton', background=[('active', t['select_hover'])],
-              foreground=[('active', t['select_fg'])])
+                    borderwidth=1, padding=(6, 2), arrowcolor=t['fg'])
+    style.map('TMenubutton', background=[('active', t['field'])],
+              foreground=[('active', t['fg'])])
 
 
 # ==================== tk 控件递归上色 ====================
